@@ -253,6 +253,46 @@ export const DriverCompanionHUD = () => {
             </span>
           </div>
 
+          {/* Ground Visual Context Preview (Compact, Mission-Safe) */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.65rem',
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-default)',
+              borderRadius: 'var(--radius-xs)',
+              padding: '0.45rem 0.65rem',
+              marginBottom: '0.65rem'
+            }}
+          >
+            <img
+              src="/assets/field/skm-nsh-016-landslide-evidence.jpg"
+              alt="Landslide Debris Obstruction on NSH-016"
+              style={{
+                width: '64px',
+                height: '48px',
+                borderRadius: '4px',
+                objectFit: 'cover',
+                border: '1px solid var(--border-default)',
+                flexShrink: 0
+              }}
+            />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '1px' }}>
+                <span style={{ fontSize: '0.62rem', fontWeight: 800, background: 'rgba(239, 68, 68, 0.12)', color: 'var(--color-critical)', padding: '1px 5px', borderRadius: '3px' }}>
+                  GROUND OBSERVATION
+                </span>
+                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                  SKM-NSH-016 (Mile 14 Sector)
+                </span>
+              </div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', lineHeight: 1.25, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                Rockfall & debris blocking both carriageways. 4x4 detour via Mangan Spur required.
+              </div>
+            </div>
+          </div>
+
           {/* Metrics */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem', marginBottom: '0.85rem' }}>
             <div style={{ background: 'var(--bg-surface)', padding: '0.55rem', borderRadius: '3px', border: '1px solid var(--border-default)' }}>

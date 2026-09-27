@@ -437,14 +437,15 @@ export const NERRegionalMap = ({
         attributionControl: false
       });
 
-      // Positron Light tiles for landing background, Voyager for operational map
+      // High-resolution clean tiles: OpenStreetMap for landing background (no watermarks), Voyager for operational map
       const tileUrl = isLanding
-        ? `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png`
-        : `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${import.meta.env.VITE_CARTO_API_KEY}`;
+        ? `https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`
+        : `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${import.meta.env.VITE_CARTO_API_KEY || ''}`;
 
       const tileLayer = L.tileLayer(tileUrl, {
         maxZoom: 18,
-        subdomains: 'abcd'
+        subdomains: isLanding ? 'abc' : 'abcd',
+        opacity: isLanding ? 0.85 : 1.0
       });
       tileLayer.addTo(map);
 
@@ -454,47 +455,78 @@ export const NERRegionalMap = ({
 
       markersGroupRef.current = L.layerGroup().addTo(map);
       mapInstanceRef.current = map;
+
+      // Ensure Leaflet map recalculates its container bounds
+      setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      }, 150);
     }
   }, [isLanding]);
 
-  // Update State Markers (Only in Operational mode, disabled in landing background)
+  // Update State Markers
   useEffect(() => {
     if (!mapInstanceRef.current || !markersGroupRef.current) return;
     const group = markersGroupRef.current;
     group.clearLayers();
 
     if (isLanding) {
-      // In landing mode, draw subtle regional network routes & nodes in light muted tones
+      // In landing mode, draw subtle regional network routes & readable state labels in light muted tones
       NER_STATES.forEach((st) => {
         // Subtle capital node
         L.circleMarker(st.center, {
-          radius: st.isPrototypePilot ? 4.5 : 3.5,
+          radius: st.isPrototypePilot ? 5 : 4,
           fillColor: st.isPrototypePilot ? '#059669' : '#0284C7',
           color: '#FFFFFF',
           weight: 1.5,
-          opacity: 0.7,
-          fillOpacity: 0.6
+          opacity: 0.85,
+          fillOpacity: 0.75
         }).addTo(group);
+
+        // Subtle state text label
+        const labelHtml = `
+          <div style="
+            font-size: 10px;
+            font-weight: 700;
+            color: #334155;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            text-shadow: 0 1px 2px #FFFFFF, 0 0 4px #FFFFFF;
+            opacity: 0.85;
+            pointer-events: none;
+          ">
+            ${st.name}
+          </div>
+        `;
+        const textIcon = L.divIcon({
+          className: `ner-landing-label-${st.id}`,
+          html: labelHtml,
+          iconSize: [80, 16],
+          iconAnchor: [40, -6]
+        });
+        L.marker(st.center, { icon: textIcon, interactive: false }).addTo(group);
       });
 
       // Draw arterial corridor network connecting major hubs
       const hubs = [
-        [27.33, 88.61], // Gangtok
-        [26.14, 91.73], // Guwahati
-        [25.57, 91.89], // Shillong
-        [27.08, 93.60], // Itanagar
-        [25.67, 94.10], // Kohima
-        [24.81, 93.93], // Imphal
-        [23.72, 92.71], // Aizawl
-        [23.83, 91.28]  // Agartala
+        [27.33, 88.61], // Gangtok (Sikkim)
+        [26.14, 91.73], // Guwahati (Assam)
+        [25.57, 91.89], // Shillong (Meghalaya)
+        [27.08, 93.60], // Itanagar (Arunachal)
+        [25.67, 94.10], // Kohima (Nagaland)
+        [24.81, 93.93], // Imphal (Manipur)
+        [23.72, 92.71], // Aizawl (Mizoram)
+        [23.83, 91.28]  // Agartala (Tripura)
       ];
 
       // Connect hubs with subtle muted network lines
       for (let i = 0; i < hubs.length - 1; i++) {
         L.polyline([hubs[i], hubs[i + 1]], {
-          color: '#64748B',
+          color: '#475569',
           weight: 1.5,
-          opacity: 0.3,
+          opacity: 0.45,
           dashArray: '4, 6'
         }).addTo(group);
       }

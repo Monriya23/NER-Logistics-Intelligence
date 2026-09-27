@@ -73,7 +73,7 @@ export const LandingPage = ({ onSelectRole }) => {
         boxSizing: 'border-box'
       }}
     >
-      {/* 1. Background Layer: Subtle North Eastern Region Map (Light Muted Grey Tones) */}
+      {/* 1. Background Layer: Discernible North Eastern Region Map (Light Muted Grey / Blue-Grey Tones) */}
       <div
         style={{
           position: 'absolute',
@@ -82,8 +82,8 @@ export const LandingPage = ({ onSelectRole }) => {
           bottom: 0,
           left: 0,
           zIndex: 1,
-          opacity: 0.08,
-          filter: 'contrast(1.05) brightness(1.0)',
+          opacity: 0.18,
+          filter: 'contrast(1.15) brightness(0.98) saturate(0.85)',
           pointerEvents: 'none'
         }}
       >
@@ -93,37 +93,37 @@ export const LandingPage = ({ onSelectRole }) => {
         />
       </div>
 
-      {/* 2. Light Neutral Scrim Overlay for Clean Content Separation */}
+      {/* 2. Very Subtle Neutral Vignette for Clean Foreground Separation */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
           zIndex: 2,
-          background: 'radial-gradient(ellipse at 50% 35%, rgba(245, 247, 250, 0.75) 0%, rgba(245, 247, 250, 0.95) 70%, #F5F7FA 100%)',
+          background: 'radial-gradient(ellipse at 50% 35%, rgba(245, 247, 250, 0.45) 0%, rgba(245, 247, 250, 0.82) 75%, #F5F7FA 100%)',
           pointerEvents: 'none'
         }}
       />
 
-      {/* 3. Hero Section: Exact Master NEVIA Logo Asset + Supporting Statement */}
+      {/* 3. Hero Section: Exact Master NEVIA Logo Asset + Large High-Contrast Supporting Statement */}
       <div
         style={{
           position: 'relative',
           zIndex: 3,
           width: '100%',
-          maxWidth: '960px',
+          maxWidth: '920px',
           margin: '0 auto',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '0.5rem 0 0.5rem 0'
+          padding: '1rem 0 0.5rem 0'
         }}
       >
-        {/* Exact Master Logo Asset — Rendered at High Resolution without any distortion */}
+        {/* Exact Master Logo Asset — Rendered at Prominent, Dominant Desktop Scale (380-440px visual width) */}
         <div
           style={{
             width: '100%',
-            maxWidth: '580px',
+            maxWidth: '440px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
@@ -135,26 +135,26 @@ export const LandingPage = ({ onSelectRole }) => {
             style={{
               width: '100%',
               height: 'auto',
-              maxHeight: '360px',
+              maxHeight: '300px',
               objectFit: 'contain',
               display: 'block',
-              filter: 'drop-shadow(0 8px 24px rgba(2, 132, 199, 0.12))'
+              filter: 'drop-shadow(0 6px 20px rgba(2, 132, 199, 0.12))'
             }}
           />
         </div>
 
-        {/* Supporting Platform Statement (Clear, Professional, High Contrast) */}
+        {/* Supporting Platform Statement (Locked Text: 19px, #0B1220, Projector-Safe, High Contrast) */}
         <p
           style={{
-            marginTop: '1.5rem',
+            marginTop: '1.25rem',
             marginBottom: '0',
-            fontSize: '1.12rem',
-            color: '#334155',
-            fontWeight: 450,
-            lineHeight: 1.55,
-            maxWidth: '700px',
+            fontSize: '1.2rem',
+            color: '#0B1220',
+            fontWeight: 500,
+            lineHeight: 1.5,
+            maxWidth: '840px',
             textAlign: 'center',
-            fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+            fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
           }}
         >
           AI-powered road accessibility and logistics intelligence for safer, more resilient movement across the North Eastern Region.
