@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 60" fill="none">
+  <defs>
+    <linearGradient id="neviaLogoGrad" x1="4" y1="50" x2="48" y2="10" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0284C7"/>
+      <stop offset="60%" stop-color="#0EA5E9"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+    <linearGradient id="neviaLogoPoly" x1="16" y1="46" x2="54" y2="16" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0F172A" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#0284C7" stop-opacity="0.4"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(6, 6) scale(1.0)">
+    <path d="M6 38 L19 14 L27 24 L35 10 L44 38 Z" fill="url(#neviaLogoPoly)" stroke="url(#neviaLogoGrad)" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M4 36 C14 36, 17 26, 23 26 C29 26, 32 18, 42 16" stroke="#10B981" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="19" cy="14" r="3" fill="#0EA5E9" stroke="#FFFFFF" stroke-width="1.5"/>
+    <circle cx="27" cy="24" r="2.5" fill="#0284C7" stroke="#FFFFFF" stroke-width="1.2"/>
+    <circle cx="35" cy="10" r="3.2" fill="#10B981" stroke="#FFFFFF" stroke-width="1.5"/>
+    <circle cx="42" cy="16" r="2.5" fill="#34D399" stroke="#FFFFFF" stroke-width="1.2"/>
+  </g>
+  <text x="64" y="32" font-family="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="900" letter-spacing="0.14em" fill="#0F172A">NEVIA</text>
+  <text x="65" y="46" font-family="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="600" letter-spacing="0.08em" fill="#64748B">REGIONAL MOBILITY INTELLIGENCE</text>
+</svg>

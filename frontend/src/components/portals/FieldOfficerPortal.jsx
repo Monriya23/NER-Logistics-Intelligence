@@ -12,11 +12,7 @@ import {
   Send,
   RefreshCw,
   CheckCircle2,
-  AlertTriangle,
-  FileText,
-  UploadCloud,
-  Image as ImageIcon,
-  X
+  AlertTriangle
 } from 'lucide-react';
 
 export const FieldOfficerPortal = () => {
@@ -29,7 +25,7 @@ export const FieldOfficerPortal = () => {
   const [selectedSegmentId, setSelectedSegmentId] = useState('SKM-NSH-016');
   const [description, setDescription] = useState('Slope failure and debris obstructing corridor. Mountain track blocked.');
   const [gpsCoords, setGpsCoords] = useState({ lat: 27.5620, lng: 88.5980 });
-  const [photoPreview, setPhotoPreview] = useState('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=600&q=80');
+  const [photoPreview, setPhotoPreview] = useState('/assets/field/skm-nsh-016-landslide-evidence.jpg');
   const [statusMessage, setStatusMessage] = useState(null);
 
   const emergencyButtons = [
@@ -53,7 +49,6 @@ export const FieldOfficerPortal = () => {
       lat: Number((27.5620 + (Math.random() - 0.5) * 0.01).toFixed(4)),
       lng: Number((88.5980 + (Math.random() - 0.5) * 0.01).toFixed(4))
     });
-    alert('📍 GPS acquired (Accuracy: ±4.2 meters)');
   };
 
   const handlePhotoUpload = (e) => {
@@ -87,7 +82,7 @@ export const FieldOfficerPortal = () => {
       queueOfflineReport(payload);
       setStatusMessage({
         type: 'OFFLINE_SAVED',
-        text: 'Report saved locally. Will synchronize when connectivity returns.'
+        text: t('saved_offline_toast', 'Saved offline — will sync automatically')
       });
     } else {
       try {
@@ -96,14 +91,14 @@ export const FieldOfficerPortal = () => {
           refreshAll();
           setStatusMessage({
             type: 'ONLINE_SYNCED',
-            text: 'Report submitted. Incident logged into Control Center.'
+            text: t('report_submitted', 'Report submitted. Incident logged into Control Center.')
           });
         }
       } catch (err) {
         queueOfflineReport(payload);
         setStatusMessage({
           type: 'OFFLINE_SAVED',
-          text: 'Report saved locally. Will synchronize when connectivity returns.'
+          text: t('saved_offline_toast', 'Saved offline — will sync automatically')
         });
       }
     }
@@ -140,19 +135,15 @@ export const FieldOfficerPortal = () => {
           </div>
           <div>
             <div style={{ fontSize: '0.68rem', fontWeight: 600, color: 'var(--brand-slate)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              FIELD REPORTER
+              {t('field_reporter', 'FIELD REPORTER')}
             </div>
             <h2 style={{ fontSize: '1.1rem', color: 'var(--text-main)', margin: 0, fontWeight: 700 }}>
-              Ground Incident Capture
+              {t('ground_incident_capture', 'Ground Incident Capture')}
             </h2>
           </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ fontSize: '0.76rem', color: 'var(--text-secondary)' }}>
-            Location: <strong style={{ color: 'var(--text-main)' }}>GPS acquired</strong>
-          </span>
-          <span style={{ opacity: 0.3 }}>|</span>
           <ConnectivityIndicator mode={connectivityMode} />
         </div>
       </div>
@@ -184,7 +175,7 @@ export const FieldOfficerPortal = () => {
             style={{ padding: '0.3rem 0.65rem', fontSize: '0.74rem' }}
           >
             <RefreshCw size={11} className={isSyncing ? 'animate-spin' : ''} />
-            <span>{isSyncing ? 'Syncing...' : 'Sync Pending Queue'}</span>
+            <span>{isSyncing ? 'Syncing...' : t('sync_pending_queue', 'Sync Pending Queue')}</span>
           </button>
         </div>
       )}
@@ -212,8 +203,8 @@ export const FieldOfficerPortal = () => {
       {/* Main Incident Reporting Form */}
       <div className="panel">
         <div style={{ marginBottom: '0.85rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-main)', margin: '0 0 0.2rem 0' }}>
-            What happened?
+          <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-main)', margin: '0 0 0.2rem 0' }}>
+            {t('what_happened', 'What happened?')}
           </h3>
           <div style={{ fontSize: '0.76rem', color: 'var(--text-secondary)' }}>
             Select the primary operational disruption observed on the ground
@@ -256,7 +247,7 @@ export const FieldOfficerPortal = () => {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
             <div>
               <label style={{ fontSize: '0.76rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                Target Road Segment
+                {t('target_road_segment', 'Target Road Segment')}
               </label>
               <select
                 value={selectedSegmentId}
@@ -283,7 +274,7 @@ export const FieldOfficerPortal = () => {
 
             <div>
               <label style={{ fontSize: '0.76rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                Incident Severity
+                {t('incident_severity', 'Incident Severity')}
               </label>
               <select
                 value={severity}
@@ -310,7 +301,7 @@ export const FieldOfficerPortal = () => {
 
           <div>
             <label style={{ fontSize: '0.76rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-              Notes & Ground Description
+              {t('notes_description', 'Notes & Ground Description')}
             </label>
             <textarea
               rows={2}
@@ -332,7 +323,7 @@ export const FieldOfficerPortal = () => {
             />
           </div>
 
-          {/* Location & Real Photo Evidence Section */}
+          {/* Location & Photo Evidence Section */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.65rem' }}>
             {/* GPS Location Box */}
             <div
@@ -344,7 +335,7 @@ export const FieldOfficerPortal = () => {
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', fontWeight: 600 }}>GPS LOCATION</span>
+                <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', fontWeight: 600 }}>{t('gps_location', 'GPS LOCATION')}</span>
                 <button
                   type="button"
                   onClick={handleCaptureGPS}
@@ -377,14 +368,23 @@ export const FieldOfficerPortal = () => {
                 <>
                   <img
                     src={photoPreview}
-                    alt="Road Incident Evidence"
-                    style={{ width: '44px', height: '44px', borderRadius: '3px', objectFit: 'cover', border: '1px solid var(--border-default)' }}
+                    alt="Road Incident Ground Evidence"
+                    style={{ width: '54px', height: '54px', borderRadius: '4px', objectFit: 'cover', border: '1px solid var(--border-default)', flexShrink: 0 }}
                   />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '0.76rem', fontWeight: 600, color: 'var(--text-main)' }}>Photo Attached</div>
-                    <div style={{ fontSize: '0.66rem', color: 'var(--text-muted)' }}>Timestamp recorded</div>
-                    <label style={{ fontSize: '0.7rem', color: 'var(--brand-accent)', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}>
-                      Change Photo
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '2px' }}>
+                      <span style={{ fontSize: '0.62rem', fontWeight: 800, background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)', padding: '1px 5px', borderRadius: '3px', textTransform: 'uppercase' }}>
+                        FIELD EVIDENCE
+                      </span>
+                      <span style={{ fontSize: '0.62rem', fontWeight: 700, color: 'var(--color-monitor)' }}>
+                        STATUS: UNVERIFIED
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.74rem', fontWeight: 600, color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      SOURCE: Field Officer
+                    </div>
+                    <label style={{ fontSize: '0.68rem', color: 'var(--brand-accent)', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}>
+                      Replace Capture
                       <input type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: 'none' }} />
                     </label>
                   </div>
@@ -395,8 +395,8 @@ export const FieldOfficerPortal = () => {
                     <Camera size={16} />
                   </div>
                   <div>
-                    <div style={{ fontSize: '0.76rem', fontWeight: 600, color: 'var(--text-main)' }}>Add Photo Evidence</div>
-                    <div style={{ fontSize: '0.66rem', color: 'var(--text-muted)' }}>Upload or take road photo</div>
+                    <div style={{ fontSize: '0.76rem', fontWeight: 600, color: 'var(--text-main)' }}>{t('photo_evidence', 'Add Photo Evidence')}</div>
+                    <div style={{ fontSize: '0.66rem', color: 'var(--text-muted)' }}>Upload road photo</div>
                   </div>
                   <input type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: 'none' }} />
                 </label>
@@ -416,7 +416,7 @@ export const FieldOfficerPortal = () => {
             }}
           >
             <Send size={14} />
-            <span>SAVE REPORT</span>
+            <span>{t('save_report', 'SAVE REPORT')}</span>
           </button>
         </form>
       </div>

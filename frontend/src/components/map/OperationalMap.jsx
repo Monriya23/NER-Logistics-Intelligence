@@ -3,12 +3,12 @@ import L from 'leaflet';
 import { useLogistics } from '../../context/LogisticsContext';
 import { api } from '../../services/api';
 import { MapLegend } from '../design-system/MapLegend';
-import { StatusBadge } from '../design-system/StatusBadge';
-import { Layers, Eye, ShieldAlert, Navigation, Clock, Activity, CloudRain, Mountain, MapPin } from 'lucide-react';
+import { Layers } from 'lucide-react';
 
 export const OperationalMap = ({
-  height = '580px',
+  height = '540px',
   gisMode = 'OPERATIONS_MODE',
+  initialLayers = null,
   onSegmentClick = null
 }) => {
   const mapContainerRef = useRef(null);
@@ -20,19 +20,50 @@ export const OperationalMap = ({
     nodes,
     deliveries,
     incidents,
-    activeRouteComparison,
     inspectSegment
   } = useLogistics();
 
-  const [activeLayers, setActiveLayers] = useState({
-    roadAccessibility: true,
-    vehicles: true,
-    facilities: true,
-    incidents: true,
-    historicalPlayback: false
-  });
+  // Role & contextual layer defaults
+  const getDefaultLayers = () => {
+    if (initialLayers) return initialLayers;
+    if (gisMode === 'OPERATIONS_MODE') {
+      return {
+        roadAccessibility: true,
+        vehicles: true,
+        facilities: false,
+        incidents: true,
+        historicalPlayback: false
+      };
+    }
+    if (gisMode === 'ROAD_INTELLIGENCE') {
+      return {
+        roadAccessibility: true,
+        vehicles: false,
+        facilities: true,
+        incidents: true,
+        historicalPlayback: false
+      };
+    }
+    if (gisMode === 'DRIVER_MODE') {
+      return {
+        roadAccessibility: true,
+        vehicles: true,
+        facilities: false,
+        incidents: false,
+        historicalPlayback: false
+      };
+    }
+    return {
+      roadAccessibility: true,
+      vehicles: true,
+      facilities: false,
+      incidents: true,
+      historicalPlayback: false
+    };
+  };
 
-  const [selectedGisMode, setSelectedGisMode] = useState(gisMode);
+  const [activeLayers, setActiveLayers] = useState(getDefaultLayers);
+  const [selectedGisMode, setSelectedGisMode] = useState(gisMode === 'INTELLIGENCE_MODE' ? 'INTELLIGENCE_MODE' : 'OPERATIONS_MODE');
   const [historicalEvents, setHistoricalEvents] = useState([]);
 
   // Strict Operational Status Colors
@@ -71,7 +102,7 @@ export const OperationalMap = ({
 
     if (!mapInstanceRef.current) {
       const map = L.map(mapContainerRef.current, {
-        center: [27.4200, 88.5800], // Centered between Gangtok and Mangan
+        center: [27.4600, 88.5800], // Centered between Gangtok and Mangan
         zoom: 11,
         zoomControl: false,
         attributionControl: false
@@ -212,20 +243,20 @@ export const OperationalMap = ({
             background: #FFFFFF;
             border: 2px solid ${iconColor};
             border-radius: 50%;
-            width: 28px;
-            height: 28px;
+            width: 26px;
+            height: 26px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 13px;
+            font-size: 12px;
             box-shadow: 0 1px 4px rgba(15, 61, 46, 0.2);
             cursor: pointer;
           ">
             ${iconSymbol}
           </div>
         `,
-        iconSize: [28, 28],
-        iconAnchor: [14, 14]
+        iconSize: [26, 26],
+        iconAnchor: [13, 13]
       });
 
       const marker = L.marker([n.lat, n.lng], { icon: customIcon });
@@ -258,7 +289,7 @@ export const OperationalMap = ({
         const vehicleIcon = L.divIcon({
           className: 'custom-vehicle-marker',
           html: `
-            <div style="position: relative; width: 32px; height: 32px;">
+            <div style="position: relative; width: 30px; height: 30px;">
               <div style="
                 position: absolute;
                 inset: 0;
@@ -268,15 +299,15 @@ export const OperationalMap = ({
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 14px;
+                font-size: 13px;
                 box-shadow: 0 2px 6px rgba(0,0,0,0.25);
               ">
                 🚑
               </div>
             </div>
           `,
-          iconSize: [32, 32],
-          iconAnchor: [16, 16]
+          iconSize: [30, 30],
+          iconAnchor: [15, 15]
         });
 
         const marker = L.marker([d.current_lat, d.current_lng], { icon: vehicleIcon });
@@ -316,12 +347,12 @@ export const OperationalMap = ({
           <div style="
             background: #FFFFFF;
             border: 2px solid ${color};
-            border-radius: 6px;
-            padding: 2px 6px;
+            border-radius: 4px;
+            padding: 2px 5px;
             display: flex;
             align-items: center;
             gap: 3px;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 800;
             color: ${color};
             box-shadow: 0 1px 4px rgba(0,0,0,0.15);
@@ -330,8 +361,8 @@ export const OperationalMap = ({
             <span>${inc.incident_type}</span>
           </div>
         `,
-        iconSize: [95, 24],
-        iconAnchor: [47, 12]
+        iconSize: [85, 22],
+        iconAnchor: [42, 11]
       });
 
       const marker = L.marker([inc.latitude, inc.longitude], { icon: incIcon });
@@ -376,20 +407,20 @@ export const OperationalMap = ({
             background: #FFFFFF;
             border: 2px solid ${color};
             border-radius: 50%;
-            width: 28px;
-            height: 28px;
+            width: 26px;
+            height: 26px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 13px;
+            font-size: 12px;
             box-shadow: 0 1px 4px rgba(0,0,0,0.2);
             cursor: pointer;
           ">
             ${iconSymbol}
           </div>
         `,
-        iconSize: [28, 28],
-        iconAnchor: [14, 14]
+        iconSize: [26, 26],
+        iconAnchor: [13, 13]
       });
 
       const marker = L.marker([ev.latitude, ev.longitude], { icon: customIcon });
@@ -420,23 +451,23 @@ export const OperationalMap = ({
   return (
     <div className="operational-map-wrapper" style={{ height }}>
       {/* Top Left: Layer Selector Overlay */}
-      <div className="map-floating-overlay" style={{ top: '0.85rem', left: '0.85rem', padding: '0.65rem 0.85rem' }}>
-        <div className="flex-row items-center gap-2" style={{ marginBottom: '0.45rem' }}>
-          <Layers size={14} color="var(--brand-slate)" />
-          <span style={{ fontSize: '0.74rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-main)' }}>
-            GIS Map Intelligence
+      <div className="map-floating-overlay" style={{ top: '0.75rem', left: '0.75rem', padding: '0.55rem 0.75rem' }}>
+        <div className="flex-row items-center gap-2" style={{ marginBottom: '0.35rem' }}>
+          <Layers size={13} color="var(--brand-slate)" />
+          <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-main)' }}>
+            Map Layers
           </span>
         </div>
 
         {/* Mode Selector */}
-        <div style={{ display: 'flex', gap: '0.35rem', marginBottom: '0.55rem' }}>
+        <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '0.45rem' }}>
           <button
             onClick={() => setSelectedGisMode('OPERATIONS_MODE')}
             style={{
               flex: 1,
-              padding: '0.3rem 0.5rem',
+              padding: '0.25rem 0.4rem',
               borderRadius: 'var(--radius-xs)',
-              fontSize: '0.72rem',
+              fontSize: '0.68rem',
               fontWeight: 600,
               background: selectedGisMode === 'OPERATIONS_MODE' ? 'var(--brand-navy)' : 'var(--bg-surface)',
               color: selectedGisMode === 'OPERATIONS_MODE' ? '#FFFFFF' : 'var(--text-secondary)',
@@ -444,15 +475,15 @@ export const OperationalMap = ({
               cursor: 'pointer'
             }}
           >
-            Operations Mode
+            Operations
           </button>
           <button
             onClick={() => setSelectedGisMode('INTELLIGENCE_MODE')}
             style={{
               flex: 1,
-              padding: '0.3rem 0.5rem',
+              padding: '0.25rem 0.4rem',
               borderRadius: 'var(--radius-xs)',
-              fontSize: '0.72rem',
+              fontSize: '0.68rem',
               fontWeight: 600,
               background: selectedGisMode === 'INTELLIGENCE_MODE' ? 'var(--brand-accent)' : 'var(--bg-surface)',
               color: selectedGisMode === 'INTELLIGENCE_MODE' ? '#FFFFFF' : 'var(--text-secondary)',
@@ -460,57 +491,57 @@ export const OperationalMap = ({
               cursor: 'pointer'
             }}
           >
-            Risk Heat Mode
+            Risk Heat
           </button>
         </div>
 
         {/* Layer Checkboxes */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.74rem' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer', color: 'var(--text-main)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', fontSize: '0.72rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', color: 'var(--text-main)' }}>
             <input
               type="checkbox"
               checked={activeLayers.roadAccessibility}
               onChange={(e) => setActiveLayers(prev => ({ ...prev, roadAccessibility: e.target.checked }))}
             />
-            Road Network & States
+            Roads & Accessibility
           </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer', color: 'var(--text-main)' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', color: 'var(--text-main)' }}>
             <input
               type="checkbox"
               checked={activeLayers.vehicles}
               onChange={(e) => setActiveLayers(prev => ({ ...prev, vehicles: e.target.checked }))}
             />
-            Vehicle Telemetry
+            Active Vehicle
           </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer', color: 'var(--text-main)' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', color: 'var(--text-main)' }}>
             <input
               type="checkbox"
               checked={activeLayers.facilities}
               onChange={(e) => setActiveLayers(prev => ({ ...prev, facilities: e.target.checked }))}
             />
-            Hospitals & Supply Hubs
+            Hospitals & Depots
           </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer', color: 'var(--text-main)' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', color: 'var(--text-main)' }}>
             <input
               type="checkbox"
               checked={activeLayers.incidents}
               onChange={(e) => setActiveLayers(prev => ({ ...prev, incidents: e.target.checked }))}
             />
-            Field Ground Incidents
+            Field Incidents
           </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer', color: 'var(--brand-navy)', fontWeight: 600 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', color: 'var(--brand-navy)', fontWeight: 600 }}>
             <input
               type="checkbox"
               checked={activeLayers.historicalPlayback}
               onChange={(e) => setActiveLayers(prev => ({ ...prev, historicalPlayback: e.target.checked }))}
             />
-            Historical Events (2019-2026)
+            Historical Records
           </label>
         </div>
       </div>
 
       {/* Top Right: Status Legend */}
-      <div className="map-floating-overlay" style={{ top: '0.85rem', right: '0.85rem' }}>
+      <div className="map-floating-overlay" style={{ top: '0.75rem', right: '0.75rem' }}>
         <MapLegend />
       </div>
 

@@ -33,4 +33,13 @@ class Settings(BaseModel):
     DEFAULT_RISK_LAMBDA: float = 3.5
     BLOCKED_PENALTY_HOURS: float = 999.0
 
+    # IMD Meteorological Integration Settings
+    IMD_API_BASE_URL: str = os.getenv("IMD_API_BASE_URL", "https://mausam.imd.gov.in/api")
+    IMD_API_KEY: str = os.getenv("IMD_API_KEY", "")
+    IMD_TIMEOUT_SECONDS: int = int(os.getenv("IMD_TIMEOUT_SECONDS", "10"))
+    IMD_ENABLED: bool = os.getenv("IMD_ENABLED", "false").lower() in ("true", "1", "yes")
+    IMD_CACHE_TTL_SECONDS: int = int(os.getenv("IMD_CACHE_TTL_SECONDS", "300"))
+    IMD_MAX_STATION_DISTANCE_KM: float = float(os.getenv("IMD_MAX_STATION_DISTANCE_KM", "50.0"))
+    IMD_FRESHNESS_HOURS: float = float(os.getenv("IMD_FRESHNESS_HOURS", "3.0"))
+
 settings = Settings()

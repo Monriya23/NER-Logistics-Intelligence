@@ -4,31 +4,24 @@ import { useLanguage } from '../../context/LanguageContext';
 import { api } from '../../services/api';
 import { OperationalCard } from '../design-system/OperationalCard';
 import { StatusBadge } from '../design-system/StatusBadge';
-import { ProvenanceBadge } from '../design-system/ProvenanceBadge';
 import {
   ShieldCheck,
   CheckCircle2,
   XCircle,
   AlertTriangle,
   FileCheck,
-  Camera,
-  MapPin,
-  Clock,
-  Layers,
   HelpCircle,
   SlidersHorizontal,
   Check,
-  Activity,
-  Navigation,
-  ExternalLink
+  Navigation
 } from 'lucide-react';
 
 export const AdminVerificationView = () => {
   const { t } = useLanguage();
-  const { incidents, segments, refreshAll, inspectSegment, inspectRouteComparison } = useLogistics();
+  const { incidents, segments, refreshAll, inspectRouteComparison } = useLogistics();
   const [selectedSegId, setSelectedSegId] = useState('SKM-NSH-016');
   const [overrideStatus, setOverrideStatus] = useState('BLOCKED');
-  const [overrideRisk, setOverrideRisk] = useState(0.92);
+  const [overrideRisk, setOverrideRisk] = useState(0.88);
   const [overrideMessage, setOverrideMessage] = useState(null);
   const [actionSuccessMessage, setActionSuccessMessage] = useState(null);
   const [loadingIncidentId, setLoadingIncidentId] = useState(null);
@@ -51,7 +44,7 @@ export const AdminVerificationView = () => {
 
       if (res.success) {
         if (actionType === 'VERIFY') {
-          setActionSuccessMessage(`✓ Incident #${incidentId} Verified · Road Status updated to BLOCKED · Detour active (+33 min)`);
+          setActionSuccessMessage(`✓ Incident #${incidentId} Verified · Operational Road Status updated to BLOCKED · Detour active (+33 min)`);
         } else if (actionType === 'REJECT') {
           setActionSuccessMessage(`Incident #${incidentId} Rejected · Operational Status remains OPEN · AI Risk preserved`);
         } else {
@@ -73,10 +66,10 @@ export const AdminVerificationView = () => {
       const res = await api.overrideSegmentStatus(selectedSegId, {
         accessibility_status: overrideStatus,
         risk_score: overrideRisk,
-        source: 'District Magistrate Executive Order Override'
+        source: 'District Magistrate Executive Order'
       });
       if (res.success) {
-        setOverrideMessage(`Operational road status updated. ${selectedSegId} → ${overrideStatus}`);
+        setOverrideMessage(`Operational road status updated: ${selectedSegId} → ${overrideStatus}`);
         refreshAll();
         setTimeout(() => setOverrideMessage(null), 5000);
       }
@@ -89,7 +82,7 @@ export const AdminVerificationView = () => {
   const verifiedCount = incidents.filter(i => i.verification_status === 'VERIFIED').length;
 
   return (
-    <div className="flex-col gap-3 animate-fade-in">
+    <div className="flex-col gap-3 animate-fade-in" style={{ paddingBottom: '2rem' }}>
       {/* Top Banner */}
       <div
         className="panel"
@@ -116,10 +109,10 @@ export const AdminVerificationView = () => {
             </div>
             <div>
               <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--brand-slate)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Authority / Verifier Workspace
+                {t('authority_verifier', 'Authority / Verifier Workspace')}
               </div>
               <h2 style={{ fontSize: '1.15rem', color: 'var(--text-main)', margin: '0.1rem 0', fontWeight: 700 }}>
-                Evidence Review & Operational Road Authority (Step 16)
+                {t('triage_workspace', 'Authority Incident Triage & Operational Status')}
               </h2>
             </div>
           </div>
@@ -149,25 +142,25 @@ export const AdminVerificationView = () => {
       {/* 3 Summary Metrics in Inline Format */}
       <div className="inline-metrics-bar">
         <div className="inline-metric-item">
-          <div className="inline-metric-lbl">Needs Attention</div>
+          <div className="inline-metric-lbl">Pending Triage</div>
           <div className="inline-metric-val" style={{ color: needsAttentionCount > 0 ? 'var(--color-at-risk)' : 'var(--color-safe)' }}>
             {needsAttentionCount}
           </div>
-          <div className="inline-metric-sub">Pending verifier review</div>
+          <div className="inline-metric-sub">Pending authority review</div>
         </div>
         <div className="inline-metric-item">
-          <div className="inline-metric-lbl">Active Incidents</div>
+          <div className="inline-metric-lbl">Total Incidents</div>
           <div className="inline-metric-val" style={{ color: 'var(--brand-accent)' }}>
             {incidents.length}
           </div>
-          <div className="inline-metric-sub">Tracked across network</div>
+          <div className="inline-metric-sub">Logged across corridors</div>
         </div>
         <div className="inline-metric-item">
           <div className="inline-metric-lbl">Verified Outcomes</div>
           <div className="inline-metric-val" style={{ color: 'var(--color-safe)' }}>
             {verifiedCount}
           </div>
-          <div className="inline-metric-sub">Confirmed road updates</div>
+          <div className="inline-metric-sub">Confirmed road status updates</div>
         </div>
       </div>
 
@@ -197,7 +190,7 @@ export const AdminVerificationView = () => {
         {/* Incident Verification Queue */}
         <OperationalCard
           title="Incident Verification Queue"
-          subtitle="Triage multi-source field reports and confirm operational disruptions"
+          subtitle="Triage multi-source field reports and declare verified disruptions"
           icon={FileCheck}
           badge={<span style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>{incidents.length} Reports</span>}
         >
@@ -239,14 +232,14 @@ export const AdminVerificationView = () => {
                       <span style={{ fontSize: '0.74rem', background: 'var(--bg-subtle)', padding: '0.1rem 0.4rem', borderRadius: '3px', border: '1px solid var(--border-default)', fontWeight: 600 }}>
                         {inc.segment_id}: {seg.name || 'Road Segment'}
                       </span>
-                      <span style={{ fontSize: '0.68rem', background: 'var(--color-emergency-bg)', color: 'var(--color-emergency)', padding: '0.1rem 0.35rem', borderRadius: '3px', fontWeight: 700 }}>
-                        {inc.photo_provenance || 'PROTOTYPE EVIDENCE · SIMULATED'}
+                      <span style={{ fontSize: '0.68rem', background: 'var(--brand-accent-subtle)', color: 'var(--brand-navy)', padding: '0.1rem 0.35rem', borderRadius: '3px', fontWeight: 700 }}>
+                        {inc.photo_provenance || 'FIELD OBSERVATION'}
                       </span>
                     </div>
 
                     <StatusBadge
                       status={isVerified ? 'OPEN' : isRejected ? 'BLOCKED' : isConflict ? 'AT RISK' : 'MONITOR'}
-                      label={isVerified ? 'VERIFIED' : isRejected ? 'REJECTED' : isConflict ? 'CONFLICT' : 'UNDER VERIFICATION'}
+                      label={isVerified ? t('verified', 'VERIFIED') : isRejected ? t('rejected', 'REJECTED') : isConflict ? t('conflict', 'CONFLICT') : t('under_verification', 'UNDER VERIFICATION')}
                       size="sm"
                     />
                   </div>
@@ -267,15 +260,15 @@ export const AdminVerificationView = () => {
                       }}
                     >
                       <AlertTriangle size={14} color="var(--color-emergency)" />
-                      <span><strong>CONTRADICTION:</strong> {inc.conflict_reason || 'Opposing passability reported. Authority arbitration required.'}</span>
+                      <span><strong>{t('contradiction', 'CONTRADICTION')}:</strong> {inc.conflict_reason || 'Opposing passability reported. Authority arbitration required.'}</span>
                     </div>
                   )}
 
-                  {/* Structured 4-Box Triage Grid (Section 7 Exact Layout) */}
+                  {/* 4-Box Triage Grid */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.45rem' }}>
                     {/* 1. Incident */}
                     <div style={{ background: 'var(--bg-subtle)', padding: '0.55rem', borderRadius: '3px', border: '1px solid var(--border-default)' }}>
-                      <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 700 }}>INCIDENT</div>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 700 }}>{t('incident', 'INCIDENT')}</div>
                       <div style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-main)', marginTop: '2px' }}>
                         {inc.incident_type === 'BRIDGE_DAMAGE' ? 'Bridge Damage' : inc.incident_type.replace('_', ' ')}
                       </div>
@@ -283,7 +276,7 @@ export const AdminVerificationView = () => {
 
                     {/* 2. Evidence & GPS */}
                     <div style={{ background: 'var(--bg-subtle)', padding: '0.55rem', borderRadius: '3px', border: '1px solid var(--border-default)' }}>
-                      <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 700 }}>EVIDENCE & GPS</div>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontWeight: 700 }}>{t('evidence_gps', 'EVIDENCE & GPS')}</div>
                       <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--brand-navy)', marginTop: '2px' }}>
                         📷 Photo • ±{inc.gps_accuracy_m || 8} m
                       </div>
@@ -313,7 +306,7 @@ export const AdminVerificationView = () => {
 
                   <div className="flex-row justify-between items-center" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
                     <span>Reporter: <strong>{inc.reporter_name}</strong></span>
-                    <span>Report Time: <strong>{inc.timestamp?.includes('T') ? inc.timestamp.split('T')[1].substring(0, 5) : inc.timestamp || '14:32'}</strong></span>
+                    <span>Time: <strong>{inc.timestamp?.includes('T') ? inc.timestamp.split('T')[1].substring(0, 5) : inc.timestamp || '14:32'}</strong></span>
                   </div>
 
                   {/* Verified Outcome Banner */}
@@ -334,7 +327,7 @@ export const AdminVerificationView = () => {
                       <div>
                         <strong>VERIFIED INCIDENT ✓ {inc.incident_type.replace('_', ' ')}</strong>
                         <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                          Operational Road Status: <strong>BLOCKED</strong> (Verified by {inc.verified_by || 'Authority'}, 14:36)
+                          Operational Road Status: <strong>BLOCKED</strong> (Verified by {inc.verified_by || 'Authority'})
                         </div>
                       </div>
 
@@ -361,11 +354,11 @@ export const AdminVerificationView = () => {
                         color: 'var(--text-secondary)'
                       }}
                     >
-                      <strong>FIELD REPORT: REJECTED</strong> · Road Status: <strong>OPEN</strong> · AI Risk: <strong style={{ color: 'var(--color-at-risk)' }}>{probPct}% AT RISK (Preserved)</strong>
+                      <strong>FIELD REPORT: REJECTED</strong> · Operational Status: <strong>OPEN</strong> · AI Risk: <strong style={{ color: 'var(--color-at-risk)' }}>{probPct}% AT RISK (Preserved)</strong>
                     </div>
                   )}
 
-                  {/* Verifier Action Buttons (Section 7-10 Requirements) */}
+                  {/* Verifier Action Buttons */}
                   {isUnderVerif && (
                     <div
                       className="flex-row justify-end gap-2"
@@ -437,7 +430,7 @@ export const AdminVerificationView = () => {
           <form onSubmit={handleManualOverride} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <div>
               <label style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                Target Road Segment
+                {t('target_road_segment', 'Target Road Segment')}
               </label>
               <select
                 value={selectedSegId}
@@ -463,7 +456,7 @@ export const AdminVerificationView = () => {
 
             <div>
               <label style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                Set Operational Road Status
+                {t('operational_road_status', 'Operational Road Status')}
               </label>
               <select
                 value={overrideStatus}
@@ -517,7 +510,7 @@ export const AdminVerificationView = () => {
               className="btn btn-primary"
               style={{ padding: '0.65rem', marginTop: '0.25rem', fontWeight: 700 }}
             >
-              Update Operational Road Status
+              {t('update_road_status', 'Update Operational Road Status')}
             </button>
           </form>
         </OperationalCard>

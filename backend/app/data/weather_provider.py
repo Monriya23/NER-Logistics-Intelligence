@@ -100,17 +100,19 @@ class SyntheticWeatherProvider(BaseWeatherProvider):
         return res
 
 
+from ..integrations.imd.service import imd_service
+from ..integrations.imd.schemas import WeatherStatus
+
 class RealWeatherProvider(BaseWeatherProvider):
     """
     Real-World Meteorological Observation Adapter (IMD AWS & Gridded API Interface).
     Designed to interface with India Meteorological Department (IMD) Gangtok/Tadong/Mangan stations.
-    Marked as INTEGRATION_READY stub when external API credentials/endpoints are not configured.
+    Delegates to the dedicated IMDService integration layer.
     """
     
     def __init__(self, api_endpoint: Optional[str] = None, api_key: Optional[str] = None):
         self.api_endpoint = api_endpoint
         self.api_key = api_key
-        self._connected = bool(api_endpoint and api_key)
         self.cached_observations: Dict[str, Dict[str, Any]] = {}
 
     @property
@@ -123,15 +125,40 @@ class RealWeatherProvider(BaseWeatherProvider):
 
     @property
     def is_operational(self) -> bool:
-        return self._connected
+        return imd_service.is_enabled and len(imd_service.cache) > 0
 
-    def ingest_live_station_data(self, station_id: str, rain_24h_mm: float, rain_3d_mm: float, rain_7d_mm: float, timestamp: Optional[str] = None) -> Dict[str, Any]:
+    def ingest_live_station_data(
+        self,
+        station_id: str,
+        rain_24h_mm: float,
+        rain_3d_mm: float,
+        rain_7d_mm: float,
+        timestamp: Optional[str] = None,
+        lat: Optional[float] = None,
+        lon: Optional[float] = None,
+        station_name: Optional[str] = None,
+        district_id: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Allows direct ingestion of verified AWS station feeds."""
+        ts = timestamp or datetime.now(timezone.utc).isoformat()
+        raw_payload = {
+            "station_id": station_id,
+            "station_name": station_name or f"IMD AWS ({station_id})",
+            "lat": lat if lat is not None else 27.3389,
+            "lon": lon if lon is not None else 88.6065,
+            "observation_time": ts,
+            "rain_24h": float(rain_24h_mm),
+            "rain_3d": float(rain_3d_mm),
+            "rain_7d": float(rain_7d_mm),
+            "district_id": district_id
+        }
+        canonical_obs = imd_service.ingest_authoritative_observation(raw_payload, district_id=district_id)
+        
         prov = ProvenanceMetadata.create(
             source=f"IMD AWS Station ({station_id})",
             provenance=ProvenanceType.REAL,
-            confidence=0.98,  # Calibrated physical rain gauge
-            timestamp=timestamp or datetime.now(timezone.utc).isoformat(),
+            confidence=0.98,
+            timestamp=ts,
             verification_status=VerificationStatus.VERIFIED
         )
         record = {
@@ -139,6 +166,7 @@ class RealWeatherProvider(BaseWeatherProvider):
             "rain_24h_mm": float(rain_24h_mm),
             "rain_3d_mm": float(rain_3d_mm),
             "rain_7d_mm": float(rain_7d_mm),
+            "weather_status": canonical_obs.data_status.value,
             "provenance": prov.to_dict(),
             "provider": self.provider_name
         }
@@ -146,22 +174,41 @@ class RealWeatherProvider(BaseWeatherProvider):
         return record
 
     def get_current_weather_for_segment(self, segment_id: str, default_elevation: float = 1200.0) -> Dict[str, Any]:
-        if not self._connected and segment_id not in self.cached_observations:
-            # Fallback signal indicating real adapter is ready for integration
-            prov = ProvenanceMetadata.create(
-                source="IMD AWS Adapter (Integration-Ready / Unconfigured)",
-                provenance=ProvenanceType.UNKNOWN,
-                confidence=None,
-                verification_status=VerificationStatus.UNVERIFIED
-            )
-            return {
-                "segment_id": segment_id,
-                "status": "INTEGRATION_READY_STUB",
-                "message": "Real IMD API credentials not configured. Falling back to synthetic provider.",
-                "provenance": prov.to_dict(),
-                "provider": self.provider_name
-            }
-        return self.cached_observations.get(segment_id, {})
+        # If imd_service is enabled and has observations
+        if imd_service.is_enabled and len(imd_service.cache) > 0:
+            report = imd_service.get_weather_for_segment(segment_id, default_elevation)
+            if report.weather_status in [WeatherStatus.LIVE, WeatherStatus.STALE]:
+                return {
+                    "segment_id": segment_id,
+                    "rain_24h_mm": report.rainfall.rain_24h_mm,
+                    "rain_3d_mm": report.rainfall.rain_3d_mm,
+                    "rain_7d_mm": report.rainfall.rain_7d_mm,
+                    "weather_condition": report.weather_condition or ("Heavy Rain" if report.rainfall.rain_24h_mm >= 64.5 else "Moderate Rain" if report.rainfall.rain_24h_mm >= 15.0 else "Light Rain"),
+                    "warning_level": report.warning_level,
+                    "weather_status": report.weather_status.value,
+                    "mapping": report.mapping.model_dump() if hasattr(report.mapping, "model_dump") else report.mapping.dict(),
+                    "provenance": report.provenance,
+                    "provider": report.source
+                }
+
+        # Check local cached observations fallback
+        if segment_id in self.cached_observations:
+            return self.cached_observations[segment_id]
+
+        # Fallback signal indicating real adapter is ready for integration
+        prov = ProvenanceMetadata.create(
+            source="IMD AWS Adapter (Integration-Ready / Unconfigured)",
+            provenance=ProvenanceType.UNKNOWN,
+            confidence=None,
+            verification_status=VerificationStatus.UNVERIFIED
+        )
+        return {
+            "segment_id": segment_id,
+            "status": "INTEGRATION_READY_STUB",
+            "message": "Real IMD API credentials not configured or live telemetry unavailable. Operating in prototype baseline.",
+            "provenance": prov.to_dict(),
+            "provider": self.provider_name
+        }
 
     def get_current_network_weather(self, segments: List[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
         res = {}
@@ -185,9 +232,10 @@ class WeatherManager:
         self.active_mode = mode
 
     def get_weather_for_segment(self, segment_id: str, default_elevation: float = 1200.0) -> Dict[str, Any]:
-        if self.active_mode == DataMode.OPERATIONAL and self.real_provider.is_operational:
+        # If IMD service has live operational data or active mode is OPERATIONAL
+        if (self.active_mode == DataMode.OPERATIONAL or imd_service.is_enabled) and self.real_provider.is_operational:
             obs = self.real_provider.get_current_weather_for_segment(segment_id, default_elevation)
-            if "rain_24h_mm" in obs:
+            if "rain_24h_mm" in obs and obs.get("weather_status") in ["LIVE", "STALE"]:
                 return obs
         # Fallback to synthetic
         return self.synthetic_provider.get_current_weather_for_segment(segment_id, default_elevation)
@@ -201,10 +249,16 @@ class WeatherManager:
             if w.get("provenance", {}).get("provenance") == ProvenanceType.SYNTHETIC:
                 fallback_used = True
 
+        active_prov = (
+            self.real_provider.provider_name 
+            if (self.real_provider.is_operational and not fallback_used) 
+            else self.synthetic_provider.provider_name
+        )
+
         return {
             "data_mode": self.active_mode.value,
             "fallback_used": fallback_used,
-            "active_provider": self.real_provider.provider_name if (self.active_mode == DataMode.OPERATIONAL and self.real_provider.is_operational) else self.synthetic_provider.provider_name,
+            "active_provider": active_prov,
             "segments_weather": weather_map
         }
 

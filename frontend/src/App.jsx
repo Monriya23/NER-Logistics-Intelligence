@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ThemeProvider } from './context/ThemeContext';
 import { DemoModeProvider } from './context/DemoModeContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { ConnectivityProvider } from './context/ConnectivityContext';
-import { LogisticsProvider, useLogistics } from './context/LogisticsContext';
+import { LogisticsProvider } from './context/LogisticsContext';
 import { SimulationProvider } from './context/SimulationContext';
 import { DriverTelemetryProvider } from './context/DriverTelemetryContext';
 import { NotificationProvider } from './context/NotificationContext';
@@ -13,29 +13,16 @@ import { SimulationControls } from './components/common/SimulationControls';
 import { RoadSegmentDrawer } from './components/map/RoadSegmentDrawer';
 
 import { LandingPage } from './components/portals/LandingPage';
-import { ControlCenterView } from './components/portals/ControlCenterView';
-import { RoadIntelligenceView } from './components/portals/RoadIntelligenceView';
-import { DeliveriesView } from './components/portals/DeliveriesView';
-import { FleetGoodsView } from './components/portals/FleetGoodsView';
-import { FieldOfficerPortal } from './components/portals/FieldOfficerPortal';
+import { LogisticsCoordinatorView } from './components/portals/LogisticsCoordinatorView';
 import { DriverCompanionHUD } from './components/portals/DriverCompanionHUD';
-import { AdminVerificationView } from './components/portals/AdminVerificationView';
-import { AnalyticsView } from './components/portals/AnalyticsView';
-import { DataAuditView } from './components/portals/DataAuditView';
-import { OperationalValidationView } from './components/portals/OperationalValidationView';
+import { FieldOfficerPortal } from './components/portals/FieldOfficerPortal';
+import { AuthorityAreaView } from './components/portals/AuthorityAreaView';
 
-const ROLE_STORAGE_KEY = 'NER_LOGISTICS_SELECTED_ROLE';
+const ROLE_STORAGE_KEY = 'NEVIA_SELECTED_OPERATIONAL_ROLE';
 
 const MainAppContent = () => {
-  // On initial load, show landing role selection unless a role was explicitly chosen
-  const [activeTab, setActiveTab] = useState(() => {
-    try {
-      const stored = localStorage.getItem(ROLE_STORAGE_KEY);
-      return stored || 'landing';
-    } catch {
-      return 'landing';
-    }
-  });
+  // Default to NEVIA dedicated public role landing page
+  const [activeTab, setActiveTab] = useState('landing');
 
   const handleRoleSelect = (roleId) => {
     try {
@@ -50,28 +37,41 @@ const MainAppContent = () => {
     switch (activeTab) {
       case 'landing':
         return <LandingPage onSelectRole={handleRoleSelect} />;
+      
+      // Workspace 1: Logistics Coordinator
+      case 'logistics':
       case 'control_center':
-        return <ControlCenterView setActiveTab={setActiveTab} />;
-      case 'road_intelligence':
-        return <RoadIntelligenceView />;
       case 'deliveries':
-        return <DeliveriesView />;
       case 'fleet_goods':
-        return <FleetGoodsView />;
-      case 'field_portal':
-        return <FieldOfficerPortal />;
+      case 'road_intelligence':
+        return <LogisticsCoordinatorView setActiveTab={setActiveTab} />;
+
+      // Workspace 2: Driver
+      case 'driver':
       case 'driver_hud':
         return <DriverCompanionHUD />;
+
+      // Workspace 3: Field Reporter
+      case 'field_reports':
+      case 'field_portal':
+        return <FieldOfficerPortal />;
+
+      // Workspace 4: Authority / Verifier
+      case 'authority':
+      case 'authority_area':
       case 'admin_verification':
-        return <AdminVerificationView />;
-      case 'analytics':
-        return <AnalyticsView />;
-      case 'data_audit':
-        return <DataAuditView />;
+        return <AuthorityAreaView initialSubTab="incident_verification" />;
+
+      // Advanced sub-views accessible via More
       case 'operational_validation':
-        return <OperationalValidationView />;
+        return <AuthorityAreaView initialSubTab="model_validation" />;
+      case 'data_audit':
+        return <AuthorityAreaView initialSubTab="data_provenance" />;
+      case 'analytics':
+        return <AuthorityAreaView initialSubTab="operational_analytics" />;
+
       default:
-        return <LandingPage onSelectRole={handleRoleSelect} />;
+        return <LogisticsCoordinatorView setActiveTab={setActiveTab} />;
     }
   };
 
@@ -89,7 +89,7 @@ const MainAppContent = () => {
       {/* Global Explainable AI Drawer */}
       <RoadSegmentDrawer />
 
-      {/* SIH Scenario Demo Controls (Active only in Demo Mode) */}
+      {/* Demonstration Scenario Controls (Active in Demo Mode) */}
       <SimulationControls />
     </div>
   );

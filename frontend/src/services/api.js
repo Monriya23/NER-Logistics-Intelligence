@@ -6,9 +6,41 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
 export const api = {
+  // Geographic Hierarchy (NER -> State -> District -> Corridor -> Segment)
+  getGeoHierarchy: async () => {
+    const res = await fetch(`${API_BASE}/geo/hierarchy`);
+    return await res.json();
+  },
+
+  getStates: async () => {
+    const res = await fetch(`${API_BASE}/geo/states`);
+    return await res.json();
+  },
+
+  getState: async (stateId) => {
+    const res = await fetch(`${API_BASE}/geo/states/${stateId}`);
+    return await res.json();
+  },
+
+  getDistrict: async (districtId) => {
+    const res = await fetch(`${API_BASE}/geo/districts/${districtId}`);
+    return await res.json();
+  },
+
+  getCorridor: async (corridorId) => {
+    const res = await fetch(`${API_BASE}/geo/corridors/${corridorId}`);
+    return await res.json();
+  },
+
   // Road Network & Segments
-  getSegments: async () => {
-    const res = await fetch(`${API_BASE}/network/segments`);
+  getSegments: async (filter = {}) => {
+    const params = new URLSearchParams();
+    if (filter.state_id) params.append('state_id', filter.state_id);
+    if (filter.district_id) params.append('district_id', filter.district_id);
+    if (filter.corridor_id) params.append('corridor_id', filter.corridor_id);
+    if (filter.all_states) params.append('all_states', 'true');
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    const res = await fetch(`${API_BASE}/network/segments${queryString}`);
     return await res.json();
   },
 
@@ -312,6 +344,26 @@ export const api = {
 
   getNotificationAudit: async () => {
     const res = await fetch(`${API_BASE}/logistics/notifications/audit`);
+    return await res.json();
+  },
+
+  // Weather & Meteorological Intelligence (IMD Integration)
+  getWeatherStatus: async () => {
+    const res = await fetch(`${API_BASE}/weather/status`);
+    return await res.json();
+  },
+
+  getWeatherObservations: async (filter = {}) => {
+    const params = new URLSearchParams();
+    if (filter.state_id) params.append('state_id', filter.state_id);
+    if (filter.district_id) params.append('district_id', filter.district_id);
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    const res = await fetch(`${API_BASE}/weather/observations${queryString}`);
+    return await res.json();
+  },
+
+  getSegmentWeather: async (segmentId) => {
+    const res = await fetch(`${API_BASE}/weather/segments/${segmentId}`);
     return await res.json();
   }
 };

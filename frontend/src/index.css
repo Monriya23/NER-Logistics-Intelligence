@@ -627,10 +627,37 @@ code, pre, .font-mono {
   animation: fadeIn 0.12s ease-out forwards;
 }
 
-/* Leaflet Map Adaptation */
+/* Controlled Operational Map Container & Containment Rules */
+.operational-map-wrapper {
+  position: relative !important;
+  width: 100% !important;
+  border-radius: var(--radius-sm);
+  overflow: hidden !important;
+  z-index: 1;
+  background: var(--bg-app);
+  display: block;
+}
+
+.map-floating-overlay {
+  position: absolute !important;
+  z-index: 500 !important;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xs);
+  box-shadow: var(--shadow-md);
+  pointer-events: auto;
+  backdrop-filter: blur(8px);
+}
+
+/* Leaflet Map Adaptation & Strict Containment */
 .leaflet-container {
   font-family: var(--font-sans) !important;
   background: var(--bg-app) !important;
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+  z-index: 1 !important;
+  overflow: hidden !important;
 }
 
 [data-theme="dark"] .leaflet-layer,
@@ -646,3 +673,33 @@ code, pre, .font-mono {
   color: #F2F5F7 !important;
   border: 1px solid #30404D;
 }
+
+/* District Chips Styling */
+.district-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.32rem 0.65rem;
+  border-radius: var(--radius-xs);
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  color: var(--text-main);
+  transition: all 0.12s ease;
+  user-select: none;
+}
+
+.district-chip:hover {
+  border-color: var(--brand-accent);
+  color: var(--brand-accent);
+}
+
+.district-chip.active {
+  background: var(--brand-accent-subtle);
+  border-color: var(--brand-accent);
+  color: var(--brand-accent);
+  font-weight: 700;
+}
+

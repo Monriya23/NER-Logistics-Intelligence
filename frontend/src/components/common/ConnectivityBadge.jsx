@@ -21,12 +21,11 @@ export const ConnectivityBadge = () => {
       case 'GOOD':
         return { dot: '●', label: 'Connected', color: 'var(--color-safe)', bg: 'var(--color-safe-bg)', border: 'var(--color-safe-border)' };
       case 'INTERMITTENT':
-        return { dot: '◐', label: 'Intermittent', color: 'var(--color-monitor)', bg: 'var(--color-monitor-bg)', border: 'var(--color-monitor-border)' };
       case 'VERY_WEAK':
-        return { dot: '◐', label: 'Weak', color: 'var(--color-at-risk)', bg: 'var(--color-at-risk-bg)', border: 'var(--color-at-risk-border)' };
+        return { dot: '●', label: 'Limited connectivity', color: 'var(--color-monitor)', bg: 'var(--color-monitor-bg)', border: 'var(--color-monitor-border)' };
       case 'OFFLINE':
       default:
-        return { dot: '○', label: 'Offline', color: 'var(--color-emergency)', bg: 'var(--color-emergency-bg)', border: 'var(--color-emergency-border)' };
+        return { dot: '●', label: 'Offline', color: 'var(--color-emergency)', bg: 'var(--color-emergency-bg)', border: 'var(--color-emergency-border)' };
     }
   };
 

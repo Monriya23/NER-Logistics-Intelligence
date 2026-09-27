@@ -26,10 +26,21 @@ class AIRiskEngine:
         if recent_incidents is None:
             recent_incidents = 1 if seg.get("accessibility_status") in ["RESTRICTED", "BLOCKED"] else 0
 
+        # Ingest dynamic weather features from WeatherManager (IMD live vs prototype fallback)
+        from ..data.weather_provider import weather_manager
+        w_obs = weather_manager.get_weather_for_segment(segment_id, float(seg.get("elevation_m", 1200.0)))
+
+        r24 = float(w_obs.get("rain_24h_mm", seg.get("current_rain_24h_mm", 25.0)))
+        r3d = float(w_obs.get("rain_3d_mm", seg.get("current_rain_3d_mm", 50.0)))
+        r7d = float(w_obs.get("rain_7d_mm", seg.get("current_rain_7d_mm", 85.0)))
+        w_status = w_obs.get("weather_status", "PROTOTYPE")
+        w_source = w_obs.get("provider", seg.get("latest_source", "IMD AWS (Representative)"))
+        w_mapping = w_obs.get("mapping", {})
+
         raw_features = {
-            "rain_24h_mm": seg.get("current_rain_24h_mm", 25.0),
-            "rain_3d_mm": seg.get("current_rain_3d_mm", 50.0),
-            "rain_7d_mm": seg.get("current_rain_7d_mm", 85.0),
+            "rain_24h_mm": r24,
+            "rain_3d_mm": r3d,
+            "rain_7d_mm": r7d,
             "slope_deg": seg.get("avg_slope_deg", 25.0),
             "elevation_m": seg.get("elevation_m", 1200.0),
             "gsi_susceptibility": seg.get("gsi_susceptibility", 2),
@@ -46,6 +57,8 @@ class AIRiskEngine:
         final_status = seg.get("accessibility_status", "OPEN")
         if final_status not in ["BLOCKED", "RESTRICTED"]:
             final_status = prediction["suggested_state"]
+
+        prediction_provenance = "LIVE_DERIVED" if w_status == "LIVE" else "PROTOTYPE_SIMULATED"
 
         return {
             "segment_id": segment_id,
@@ -73,7 +86,10 @@ class AIRiskEngine:
             "avg_slope_deg": features["slope_deg"],
             "gsi_susceptibility": seg.get("gsi_susceptibility"),
             "prediction_timestamp": datetime.now(timezone.utc).isoformat(),
-            "latest_source": seg.get("latest_source"),
+            "latest_source": w_source,
+            "weather_status": w_status,
+            "weather_mapping": w_mapping,
+            "prediction_provenance": prediction_provenance,
             "last_updated_minutes_ago": seg.get("last_updated_minutes_ago"),
             "model_provenance": prediction["model_provenance"]
         }

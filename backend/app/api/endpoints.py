@@ -33,17 +33,99 @@ from ..validation import (
     retraining_auditor, model_registry
 )
 from ..i18n.translations import get_translations
+from ..gis.geographic_hierarchy import (
+    get_ner_hierarchy,
+    get_state,
+    get_district,
+    get_corridor,
+    get_segments_by_filter,
+    get_all_ner_segments
+)
 
 router = APIRouter()
 
-# --- 1. Road Network & Accessibility ---
-@router.get("/network/segments", summary="Get all road segments with real-time accessibility status")
-def get_segments():
+# --- 0. NER Geographic Hierarchy Architecture ---
+@router.get("/geo/hierarchy", summary="Get canonical 8-state NER geographic hierarchy")
+def get_geographic_hierarchy():
     return {
         "success": True,
-        "count": len(network_graph.get_all_segments()),
-        "segments": network_graph.get_all_segments()
+        "region": "North Eastern Region (NER)",
+        "total_states": len(get_ner_hierarchy()),
+        "hierarchy": get_ner_hierarchy()
     }
+
+@router.get("/geo/states", summary="Get list of all 8 NER states with coverage classifications")
+def get_all_states():
+    states = get_ner_hierarchy()
+    summary = []
+    for s in states:
+        dist_names = [d["name"] for d in s.get("districts", [])]
+        summary.append({
+            "id": s["id"],
+            "name": s["name"],
+            "code": s["code"],
+            "capital": s["capital"],
+            "status": s["status"],
+            "coverage_type": s["coverage_type"],
+            "is_prototype_pilot": s["is_prototype_pilot"],
+            "districts_count": len(dist_names),
+            "representative_districts": dist_names,
+            "center": s["center"],
+            "zoom": s["zoom"]
+        })
+    return {"success": True, "states": summary}
+
+@router.get("/geo/states/{state_id}", summary="Get state details with representative districts & corridors")
+def get_state_details(state_id: str):
+    st = get_state(state_id)
+    if not st:
+        raise HTTPException(status_code=404, detail=f"State '{state_id}' not found in NER hierarchy.")
+    return {"success": True, "state": st}
+
+@router.get("/geo/districts/{district_id}", summary="Get district details with representative corridors & segments")
+def get_district_details(district_id: str):
+    dist = get_district(district_id)
+    if not dist:
+        raise HTTPException(status_code=404, detail=f"District '{district_id}' not found.")
+    return {"success": True, "district": dist}
+
+@router.get("/geo/corridors/{corridor_id}", summary="Get corridor details with road segments")
+def get_corridor_details(corridor_id: str):
+    corr = get_corridor(corridor_id)
+    if not corr:
+        raise HTTPException(status_code=404, detail=f"Corridor '{corridor_id}' not found.")
+    return {"success": True, "corridor": corr}
+
+# --- 1. Road Network & Accessibility ---
+@router.get("/network/segments", summary="Get road segments with optional state/district/corridor filtering")
+def get_segments(
+    state_id: Optional[str] = Query(None, description="Optional filter by State ID"),
+    district_id: Optional[str] = Query(None, description="Optional filter by District ID"),
+    corridor_id: Optional[str] = Query(None, description="Optional filter by Corridor ID"),
+    all_states: bool = Query(False, description="Return segments across all 8 states")
+):
+    s_id = state_id if isinstance(state_id, str) else None
+    d_id = district_id if isinstance(district_id, str) else None
+    c_id = corridor_id if isinstance(corridor_id, str) else None
+    all_st = all_states if isinstance(all_states, bool) else False
+
+    if s_id or d_id or c_id or all_st:
+        filtered = get_segments_by_filter(state_id=s_id, district_id=d_id, corridor_id=c_id)
+        return {
+            "success": True,
+            "count": len(filtered),
+            "filter": {"state_id": s_id, "district_id": d_id, "corridor_id": c_id},
+            "segments": filtered
+        }
+    # Default to all active pilot segments for backward compatibility
+    all_segs = network_graph.get_all_segments()
+    return {
+        "success": True,
+        "count": len(all_segs),
+        "segments": all_segs
+    }
+
+
 
 @router.get("/network/nodes", summary="Get all logistics nodes / facilities")
 def get_nodes():
@@ -503,4 +585,75 @@ def evaluate_notification(req: NotificationEvaluationRequest):
 def mark_notification_read(notification_id: str):
     res = notification_engine.mark_as_read(notification_id)
     return {"success": res, "notification_id": notification_id}
+
+# --- 13. Weather & Meteorological Intelligence (IMD Integration) ---
+from ..integrations.imd import imd_service, WeatherStatus
+
+@router.get("/weather/status", summary="Get IMD weather integration health and configuration status")
+def get_weather_status():
+    status = imd_service.get_status()
+    return {
+        "success": True,
+        "source": status.source,
+        "source_name": status.source_name,
+        "enabled": status.enabled,
+        "api_configured": status.api_configured,
+        "status": status.status.value,
+        "base_url": status.base_url,
+        "last_successful_fetch": status.last_successful_fetch,
+        "cached_observations": status.cached_observations_count,
+        "active_stations": status.active_stations_count,
+        "active_pilot_state": status.active_pilot_state,
+        "pilot_coverage_type": status.pilot_coverage_type,
+        "freshness_window_hours": status.freshness_window_hours,
+        "max_search_radius_km": status.max_search_radius_km
+    }
+
+@router.get("/weather/observations", summary="Get canonical weather observations with optional filters")
+def get_weather_observations(
+    state_id: Optional[str] = Query(None, description="State ID filter (e.g. 'sikkim')"),
+    district_id: Optional[str] = Query(None, description="District ID filter (e.g. 'mangan')")
+):
+    observations = imd_service.get_all_observations(state_id=state_id, district_id=district_id)
+    return {
+        "success": True,
+        "count": len(observations),
+        "observations": [obs.to_dict() for obs in observations]
+    }
+
+@router.get("/weather/segments/{segment_id}", summary="Get weather observation mapped to a specific road segment")
+def get_segment_weather(segment_id: str):
+    report = imd_service.get_weather_for_segment(segment_id)
+    return {
+        "success": True,
+        "segment_id": report.segment_id,
+        "segment_name": report.segment_name,
+        "state_id": report.state_id,
+        "district_id": report.district_id,
+        "weather_status": report.weather_status.value,
+        "rainfall": {
+            "24h_mm": report.rainfall.rain_24h_mm,
+            "3d_mm": report.rainfall.rain_3d_mm,
+            "7d_mm": report.rainfall.rain_7d_mm,
+            "warning_category": report.rainfall.warning_category
+        },
+        "temperature_c": report.temperature_c,
+        "humidity_percent": report.humidity_percent,
+        "wind_speed_kmph": report.wind_speed_kmph,
+        "weather_condition": report.weather_condition,
+        "warning_level": report.warning_level,
+        "source": report.source,
+        "mapping": {
+            "method": report.mapping.method.value,
+            "station_id": report.mapping.station_id,
+            "station_name": report.mapping.station_name,
+            "distance_km": report.mapping.distance_km,
+            "quality": report.mapping.quality
+        },
+        "observation_timestamp": report.observation_timestamp,
+        "last_sync": report.last_sync,
+        "is_stale": report.is_stale,
+        "staleness_reason": report.staleness_reason,
+        "provenance": report.provenance
+    }
 

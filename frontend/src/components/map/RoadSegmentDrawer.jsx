@@ -81,7 +81,7 @@ export const RoadSegmentDrawer = () => {
     severity: 'CRITICAL',
     location_name: selectedSegment.name,
     description: 'Bridge deck displacement and abutment erosion. Carriageway structurally compromised.',
-    photo_url: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=600&q=80',
+    photo_url: '/assets/field/skm-nsh-016-landslide-evidence.jpg',
     photo_provenance: 'PROTOTYPE EVIDENCE · SIMULATED',
     reporter_name: 'Karma Lhaden Bhutia (Field Inspector Mangan)',
     timestamp: '14:32',

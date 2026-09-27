@@ -1,200 +1,311 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { NERRegionalMap } from '../map/NERRegionalMap';
 import {
-  Compass,
+  Truck,
   Navigation,
   Radio,
   ShieldCheck,
   ArrowRight
 } from 'lucide-react';
 
-const ROLE_STORAGE_KEY = 'NER_LOGISTICS_SELECTED_ROLE';
-
 export const LandingPage = ({ onSelectRole }) => {
-  const [savedRole, setSavedRole] = useState(null);
-  const [hoveredRole, setHoveredRole] = useState(null);
+  const [hoveredCard, setHoveredCard] = useState(null);
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(ROLE_STORAGE_KEY);
-      if (stored) setSavedRole(stored);
-    } catch (e) {
-      console.warn('Could not read stored role', e);
-    }
-  }, []);
-
-  const handleRoleSelect = (roleId) => {
-    try {
-      localStorage.setItem(ROLE_STORAGE_KEY, roleId);
-    } catch (e) {
-      console.warn('Could not persist selected role', e);
-    }
+  const handleSelectRole = (roleId) => {
     if (onSelectRole) {
       onSelectRole(roleId);
     }
   };
 
-  const getRoleLabel = (roleId) => {
-    switch (roleId) {
-      case 'control_center':
-        return 'Logistics Coordinator';
-      case 'driver_hud':
-        return 'Driver';
-      case 'field_portal':
-        return 'Field Reporter';
-      case 'admin_verification':
-        return 'Authority / Verifier';
-      default:
-        return 'Logistics Coordinator';
-    }
-  };
-
-  const roles = [
+  const roleCards = [
     {
-      id: 'control_center',
+      id: 'logistics',
       title: 'LOGISTICS COORDINATOR',
       description: 'Plan and monitor essential-goods movement.',
-      icon: Compass,
-      color: 'var(--brand-accent)'
+      icon: Truck,
+      color: '#0284C7',
+      accentColor: '#38BDF8',
+      targetTab: 'logistics'
     },
     {
-      id: 'driver_hud',
+      id: 'driver',
       title: 'DRIVER',
       description: 'Receive route alerts and report road conditions.',
       icon: Navigation,
-      color: 'var(--accent-blue)'
+      color: '#0D9488',
+      accentColor: '#2DD4BF',
+      targetTab: 'driver'
     },
     {
-      id: 'field_portal',
+      id: 'field_reports',
       title: 'FIELD REPORTER',
       description: 'Capture incidents and road conditions from the ground.',
       icon: Radio,
-      color: 'var(--accent-amber)'
+      color: '#D97706',
+      accentColor: '#FBBF24',
+      targetTab: 'field_reports'
     },
     {
-      id: 'admin_verification',
+      id: 'authority',
       title: 'AUTHORITY / VERIFIER',
       description: 'Verify incidents and update operational road status.',
       icon: ShieldCheck,
-      color: 'var(--accent-green)'
+      color: '#059669',
+      accentColor: '#10B981',
+      targetTab: 'authority'
     }
   ];
 
   return (
-    <div className="flex-col gap-6 animate-fade-in" style={{ maxWidth: '1020px', margin: '1.5rem auto 3.5rem auto', width: '100%' }}>
-      {/* Title & Purpose Section */}
+    <div
+      className="landing-page-container animate-fade-in"
+      style={{
+        position: 'relative',
+        width: '100%',
+        minHeight: 'calc(100vh - 50px)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        overflow: 'hidden',
+        background: '#F5F7FA',
+        padding: '2.5rem 1.5rem 2.5rem 1.5rem',
+        boxSizing: 'border-box'
+      }}
+    >
+      {/* 1. Background Layer: Subtle North Eastern Region Map (Light Muted Grey Tones) */}
       <div
         style={{
-          textAlign: 'center',
-          padding: '2rem 1.5rem 1rem 1.5rem'
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0,
+          zIndex: 1,
+          opacity: 0.08,
+          filter: 'contrast(1.05) brightness(1.0)',
+          pointerEvents: 'none'
         }}
       >
-        <div style={{ fontSize: '0.76rem', fontWeight: 600, color: 'var(--brand-slate)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.35rem' }}>
-          Ministry of Development of North Eastern Region (MDoNER)
-        </div>
-        <h1 style={{ fontSize: '2.1rem', color: 'var(--text-main)', marginBottom: '0.4rem', fontWeight: 700, letterSpacing: '-0.02em' }}>
-          NER Logistics Intelligence
-        </h1>
-        <div style={{ fontSize: '1rem', color: 'var(--text-secondary)', fontWeight: 500, maxWidth: '750px', margin: '0 auto 0.65rem auto', lineHeight: 1.45 }}>
-          AI-Based Smart Logistics and Accessibility Intelligence Platform for North Eastern Region
-        </div>
-        <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', maxWidth: '620px', margin: '0 auto 1.25rem auto', lineHeight: 1.5 }}>
-          Operational intelligence for roads, logistics and essential-goods movement across challenging mountain corridors.
-        </p>
-
-        {/* Quick Resume Option */}
-        {savedRole && (
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', background: 'var(--bg-surface)', border: '1px solid var(--border-default)', padding: '0.45rem 0.9rem', borderRadius: 'var(--radius-xs)', boxShadow: 'var(--shadow-xs)' }}>
-            <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-              Previously active as: <strong style={{ color: 'var(--text-main)' }}>{getRoleLabel(savedRole)}</strong>
-            </span>
-            <button
-              onClick={() => handleRoleSelect(savedRole)}
-              className="btn btn-primary"
-              style={{ fontSize: '0.78rem', padding: '0.3rem 0.75rem' }}
-            >
-              <span>Continue as {getRoleLabel(savedRole)}</span>
-              <ArrowRight size={12} />
-            </button>
-          </div>
-        )}
+        <NERRegionalMap
+          height="100%"
+          variant="landing"
+        />
       </div>
 
-      {/* Role Selection Question */}
-      <div>
-        <div style={{ textAlign: 'center', marginBottom: '1.15rem' }}>
-          <h2 style={{ fontSize: '1.15rem', fontWeight: 600, color: 'var(--text-main)', margin: '0 0 0.2rem 0' }}>
-            Who are you?
-          </h2>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-            Select your operational role to enter the corresponding workspace
-          </div>
+      {/* 2. Light Neutral Scrim Overlay for Clean Content Separation */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 2,
+          background: 'radial-gradient(ellipse at 50% 35%, rgba(245, 247, 250, 0.75) 0%, rgba(245, 247, 250, 0.95) 70%, #F5F7FA 100%)',
+          pointerEvents: 'none'
+        }}
+      />
+
+      {/* 3. Hero Section: Exact Master NEVIA Logo Asset + Supporting Statement */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 3,
+          width: '100%',
+          maxWidth: '960px',
+          margin: '0 auto',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '0.5rem 0 0.5rem 0'
+        }}
+      >
+        {/* Exact Master Logo Asset — Rendered at High Resolution without any distortion */}
+        <div
+          style={{
+            width: '100%',
+            maxWidth: '580px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <img
+            src="/brand/nevia-master-transparent.png"
+            alt="NEVIA — Regional Mobility Intelligence. See the road. Understand the risk. Move what matters."
+            style={{
+              width: '100%',
+              height: 'auto',
+              maxHeight: '360px',
+              objectFit: 'contain',
+              display: 'block',
+              filter: 'drop-shadow(0 8px 24px rgba(2, 132, 199, 0.12))'
+            }}
+          />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.85rem' }}>
-          {roles.map((role) => {
-            const Icon = role.icon;
-            const isSaved = savedRole === role.id;
-            const isHovered = hoveredRole === role.id;
+        {/* Supporting Platform Statement (Clear, Professional, High Contrast) */}
+        <p
+          style={{
+            marginTop: '1.5rem',
+            marginBottom: '0',
+            fontSize: '1.12rem',
+            color: '#334155',
+            fontWeight: 450,
+            lineHeight: 1.55,
+            maxWidth: '700px',
+            textAlign: 'center',
+            fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+          }}
+        >
+          AI-powered road accessibility and logistics intelligence for safer, more resilient movement across the North Eastern Region.
+        </p>
+      </div>
 
-            return (
+      {/* 4. Four Primary Role Entry Cards (Solid White #FFFFFF, Clean 2 × 2 Grid on Desktop) */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 3,
+          width: '100%',
+          maxWidth: '960px',
+          margin: '1.75rem auto 0 auto',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+          gap: '1.35rem'
+        }}
+      >
+        {roleCards.map((card) => {
+          const Icon = card.icon;
+          const isHovered = hoveredCard === card.id;
+
+          return (
+            <div
+              key={card.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => handleSelectRole(card.targetTab)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleSelectRole(card.targetTab);
+                }
+              }}
+              onMouseEnter={() => setHoveredCard(card.id)}
+              onMouseLeave={() => setHoveredCard(null)}
+              style={{
+                background: '#FFFFFF',
+                border: `1px solid ${isHovered ? card.color : '#D7E0E8'}`,
+                borderRadius: '14px',
+                padding: '1.65rem 1.55rem',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                textAlign: 'left',
+                justifyContent: 'space-between',
+                minHeight: '200px',
+                cursor: 'pointer',
+                position: 'relative',
+                overflow: 'hidden',
+                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                transform: isHovered ? 'translateY(-3px)' : 'translateY(0)',
+                boxShadow: isHovered
+                  ? '0 12px 28px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(2, 132, 199, 0.08)'
+                  : '0 2px 6px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02)',
+                outline: 'none'
+              }}
+            >
+              {/* Top Accent Indicator */}
               <div
-                key={role.id}
-                onClick={() => handleRoleSelect(role.id)}
-                onMouseEnter={() => setHoveredRole(role.id)}
-                onMouseLeave={() => setHoveredRole(null)}
-                className="panel"
                 style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  padding: '1.35rem 1.15rem',
-                  border: isSaved
-                    ? '2px solid var(--brand-navy)'
-                    : isHovered
-                    ? '1px solid var(--brand-accent)'
-                    : '1px solid var(--border-default)',
-                  background: isHovered ? 'var(--bg-hover)' : 'var(--bg-surface)',
-                  cursor: 'pointer',
-                  transition: 'all 0.12s ease'
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '3px',
+                  background: isHovered
+                    ? `linear-gradient(90deg, ${card.color}, ${card.accentColor})`
+                    : 'transparent',
+                  transition: 'background 0.2s ease'
                 }}
-              >
-                <div>
-                  <div
-                    style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: 'var(--radius-xs)',
-                      background: 'var(--bg-subtle)',
-                      border: '1px solid var(--border-subtle)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: role.color,
-                      marginBottom: '0.85rem'
-                    }}
-                  >
-                    <Icon size={18} />
-                  </div>
+              />
 
-                  <h3 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.35rem', letterSpacing: '0.01em' }}>
-                    {role.title}
-                  </h3>
-
-                  <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.4, margin: 0 }}>
-                    {role.description}
-                  </p>
+              {/* Card Top: Role Icon & High-Contrast Typography */}
+              <div style={{ width: '100%' }}>
+                {/* Role Icon Container */}
+                <div
+                  style={{
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: '10px',
+                    background: `${card.color}14`,
+                    border: `1px solid ${card.color}35`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: card.color,
+                    marginBottom: '1rem'
+                  }}
+                >
+                  <Icon size={22} />
                 </div>
 
-                <div style={{ marginTop: '1.25rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--brand-accent)' }}>
-                    Enter Workspace
-                  </span>
-                  <ArrowRight size={13} color="var(--brand-accent)" />
+                {/* Role Title (High Contrast Dark #0B1220, 22px, Bold) */}
+                <div
+                  style={{
+                    fontSize: '1.38rem',
+                    fontWeight: 700,
+                    color: '#0B1220',
+                    letterSpacing: '0.01em',
+                    lineHeight: 1.25,
+                    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  }}
+                >
+                  {card.title}
+                </div>
+
+                {/* Role Description (#475569, 15.5px) */}
+                <div
+                  style={{
+                    fontSize: '0.98rem',
+                    color: '#475569',
+                    marginTop: '0.5rem',
+                    lineHeight: 1.55,
+                    fontWeight: 450,
+                    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+                  }}
+                >
+                  {card.description}
                 </div>
               </div>
-            );
-          })}
-        </div>
+
+              {/* Card Bottom: Divider + Clear "Enter Workspace →" Action */}
+              <div
+                style={{
+                  width: '100%',
+                  marginTop: '1.25rem',
+                  paddingTop: '0.95rem',
+                  borderTop: '1px solid #EDF2F7',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  color: isHovered ? card.color : '#0369A1',
+                  fontSize: '0.94rem',
+                  fontWeight: 600,
+                  transition: 'color 0.18s ease'
+                }}
+              >
+                <span>Enter Workspace</span>
+                <ArrowRight
+                  size={16}
+                  style={{
+                    transform: isHovered ? 'translateX(4px)' : 'translateX(0)',
+                    transition: 'transform 0.18s ease'
+                  }}
+                />
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
