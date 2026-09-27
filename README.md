@@ -98,45 +98,45 @@ NEVIA introduces an end-to-end operational software pipeline:
 
 ```mermaid
 flowchart TD
-    subgraph Data_Sources ["1. Ingestion Layer"]
-        W[Weather & Rainfall Signals]
-        T[DEM Terrain & Slope Data]
-        N[Highway Network Graph]
-        H[Historical Event Archive]
-        F[Field Incident Reports]
-        G[Fleet Geolocation / GPS]
+    subgraph Data_Sources["1. Ingestion Layer"]
+        W["Weather & Rainfall Signals"]
+        T["DEM Terrain & Slope Data"]
+        N["Highway Network Graph"]
+        H["Historical Event Archive"]
+        F["Field Incident Reports"]
+        G["Fleet Geolocation / GPS"]
     end
 
-    subgraph Processing ["2. Data Processing & Features"]
-        DP[Data Normalization & Provenance Tagging]
-        FE[Feature Engineering: 24h/3d/7d Rain, Slope, Geological Index]
+    subgraph Processing["2. Data Processing & Features"]
+        DP["Data Normalization & Provenance Tagging"]
+        FE["Feature Engineering: 24h / 3d / 7d Rain, Slope, Geological Index"]
     end
 
-    subgraph AI_Core ["3. AI Risk Engine"]
-        ML[HistGradientBoostingClassifier + Monotonic Constraints]
-        CAL[Isotonic Probability Calibration]
+    subgraph AI_Core["3. AI Risk Engine"]
+        ML["HistGradientBoostingClassifier + Monotonic Constraints"]
+        CAL["Isotonic Probability Calibration"]
     end
 
-    subgraph GIS_Layer ["4. Geographic Intelligence Layer"]
-        GEO[8-State NER Hierarchy: State -> District -> Corridor -> Segment]
-        STAT[Operational Road Status: Open / Monitor / At Risk / Blocked]
+    subgraph GIS_Layer["4. Geographic Intelligence Layer"]
+        GEO["8-State NER Hierarchy: State → District → Corridor → Segment"]
+        STAT["Operational Road Status: Open / Monitor / At Risk / Blocked"]
     end
 
-    subgraph Routing ["5. Risk-Aware Routing Engine"]
-        ROUT[NetworkX Dijkstra Engine]
-        PEN["Risk Penalty: Cost = BaseTime * (1 + 3 * P(disruption)^2)"]
+    subgraph Routing["5. Risk-Aware Routing Engine"]
+        ROUT["NetworkX Dijkstra Engine"]
+        PEN["Risk Penalty: Base Time × (1 + 3 × P(disruption)^2)"]
     end
 
-    subgraph Delivery_Engine ["6. Delivery & Impact Analysis"]
-        DEL[Active Deliveries + Vehicle Constraints + Priority Cargo]
-        TTI[Time-to-Impact (TTI) & Delay Calculation]
+    subgraph Delivery_Engine["6. Delivery & Impact Analysis"]
+        DEL["Active Deliveries + Vehicle Constraints + Priority Cargo"]
+        TTI["Time-to-Impact (TTI) & Delay Calculation"]
     end
 
-    subgraph Dispatch ["7. Operational Interface & Dispatch"]
-        OPS[Logistics Operator Dashboard]
-        AUTH[Authority Verification Queue]
-        FLD[Offline Field Mobile Reporter]
-        DRV[Driver In-Transit Companion]
+    subgraph Dispatch["7. Operational Interface & Dispatch"]
+        OPS["Logistics Operator Dashboard"]
+        AUTH["Authority Verification Queue"]
+        FLD["Offline Field Mobile Reporter"]
+        DRV["Driver In-Transit Companion"]
     end
 
     Data_Sources --> DP
