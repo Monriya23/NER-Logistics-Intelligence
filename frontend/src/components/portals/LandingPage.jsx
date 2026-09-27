@@ -73,33 +73,43 @@ export const LandingPage = ({ onSelectRole }) => {
         boxSizing: 'border-box'
       }}
     >
-      {/* 1. Background Layer: Discernible North Eastern Region Map (Light Muted Grey / Blue-Grey Tones) */}
+      {/* 1. Authoritative Geographic Context Layer: Provided North Eastern Region (NER) Map */}
       <div
         style={{
           position: 'absolute',
-          top: 0,
-          right: 0,
-          bottom: 0,
-          left: 0,
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -48%)',
+          width: 'min(92vw, 960px)',
+          height: 'min(86vh, 840px)',
           zIndex: 1,
-          opacity: 0.18,
-          filter: 'contrast(1.15) brightness(0.98) saturate(0.85)',
-          pointerEvents: 'none'
+          pointerEvents: 'none',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: 0.11,
+          filter: 'contrast(1.15) brightness(0.92) saturate(0.85)'
         }}
       >
-        <NERRegionalMap
-          height="100%"
-          variant="landing"
+        <img
+          src="/brand/ner-map-silhouette-hires.png"
+          alt="North Eastern Region Geographic Intelligence Map"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            display: 'block'
+          }}
         />
       </div>
 
-      {/* 2. Very Subtle Neutral Vignette for Clean Foreground Separation */}
+      {/* 2. Soft Neutral Vignette for Clean Separation and Edge Blending into #F5F7FA */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
           zIndex: 2,
-          background: 'radial-gradient(ellipse at 50% 35%, rgba(245, 247, 250, 0.45) 0%, rgba(245, 247, 250, 0.82) 75%, #F5F7FA 100%)',
+          background: 'radial-gradient(ellipse at 50% 36%, rgba(245, 247, 250, 0.35) 0%, rgba(245, 247, 250, 0.78) 68%, #F5F7FA 100%)',
           pointerEvents: 'none'
         }}
       />
@@ -110,20 +120,20 @@ export const LandingPage = ({ onSelectRole }) => {
           position: 'relative',
           zIndex: 3,
           width: '100%',
-          maxWidth: '920px',
+          maxWidth: '960px',
           margin: '0 auto',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '1rem 0 0.5rem 0'
+          padding: '1.25rem 0 0.5rem 0'
         }}
       >
-        {/* Exact Master Logo Asset — Rendered at Prominent, Dominant Desktop Scale (380-440px visual width) */}
+        {/* Exact Master Logo Asset — Dominant Desktop Scale (450–480px visual width) */}
         <div
           style={{
             width: '100%',
-            maxWidth: '440px',
+            maxWidth: '470px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
@@ -135,24 +145,24 @@ export const LandingPage = ({ onSelectRole }) => {
             style={{
               width: '100%',
               height: 'auto',
-              maxHeight: '300px',
+              maxHeight: '330px',
               objectFit: 'contain',
               display: 'block',
-              filter: 'drop-shadow(0 6px 20px rgba(2, 132, 199, 0.12))'
+              filter: 'drop-shadow(0 8px 24px rgba(2, 132, 199, 0.14))'
             }}
           />
         </div>
 
-        {/* Supporting Platform Statement (Locked Text: 19px, #0B1220, Projector-Safe, High Contrast) */}
+        {/* Supporting Platform Statement (Locked Text: 19.5px, #0B1220, Projector-Safe, High Contrast) */}
         <p
           style={{
-            marginTop: '1.25rem',
+            marginTop: '1.35rem',
             marginBottom: '0',
-            fontSize: '1.2rem',
+            fontSize: '1.22rem',
             color: '#0B1220',
             fontWeight: 500,
             lineHeight: 1.5,
-            maxWidth: '840px',
+            maxWidth: '880px',
             textAlign: 'center',
             fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
           }}
